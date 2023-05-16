@@ -1,0 +1,10 @@
+jupyter
+pandas
+urllib3
+pyqrcode
+matplotlib
+pyhtml2pdf
+colorlog
+#numpy
+#json
+#webbrowser

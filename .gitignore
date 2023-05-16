@@ -9,6 +9,9 @@ tags
 *.orig
 
 *.idea
+*__pycache__*
+*.ipynb_checkpoints*
+*.python-version*
 
 # Created by .ignore support plugin (hsz.mobi)
 
