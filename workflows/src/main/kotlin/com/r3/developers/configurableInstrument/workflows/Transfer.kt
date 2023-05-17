@@ -59,7 +59,7 @@ class Transfer : ClientStartableFlow {
 //        val notary = Party(notaryInfo.name, notaryKey)
 
         val ourIdentity = memberLookup.myInfo()
-        log.info("Transfer request of instrument id=$stateId, from ${ourIdentity.name} to ${request.to}")
+        log.info("Transfer request of instrument id=$stateId, from ${ourIdentity.name} to ${request.to} quantity='$quantity'")
 
         val newOwner = memberLookup.lookup(request.to)
             ?: throw IllegalArgumentException("New Owner does not exist in the network")
@@ -72,10 +72,15 @@ class Transfer : ClientStartableFlow {
         @Suppress("DEPRECATION")
         var outputList = mutableListOf<ContractState>()
         var issuerMi = memberLookup.lookup(inputState.state.contractState.issuer)?: throw IllegalArgumentException("Issuer does not exist in the network")
-        if (listOf(null, quantity).contains(inputState.state.contractState.quantity)) {// if quantity(q) is null or same as transfer quantity(transfer all)
+
+        log.info("Transfer request of instrument id=$stateId, from ${ourIdentity.name} to ${request.to} quantity='$quantity' input state quantity is '${inputState.state.contractState.quantity}'")
+
+        if (listOf(null, inputState.state.contractState.quantity).contains(quantity)) {// if quantity(q) is null or same as transfer quantity(transfer all)
+//            log.info("transfer requested quantity=$quantity, input state quantity=${inputState.state.contractState.quantity} -- going for changeOwner call")
             // Complete transfer(transfer all)
             outputList.add(inputState.state.contractState.changeOwner(newOwner, issuerMi))
         }else{
+//            log.info("transfer requested quantity=$quantity, input state quantity=${inputState.state.contractState.quantity} -- going for partialTransfer call")
             // Partial transfer(transfer small set)
             outputList = inputState.state.contractState.partialTransfer(quantity, newOwner, issuerMi).toMutableList()
         }

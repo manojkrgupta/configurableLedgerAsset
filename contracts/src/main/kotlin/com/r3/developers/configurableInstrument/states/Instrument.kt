@@ -71,7 +71,7 @@ class Instrument(
 
     fun partialTransfer(q: Int?, newOwner: MemberInfo, issuerMi: MemberInfo): MutableList<Instrument> {
 
-        if ((quantity == null) or (q == null) or (q!! > quantity!!)) {throw IllegalArgumentException("Error 504")}
+        if ((quantity == null) or (q == null) or (q!! > quantity!!)) {throw IllegalArgumentException("Insufficient quantity")}
         val state1_old_owner = changeQuantity(quantity - q!!)
         val state2_new_owner = Instrument(
             UUID.randomUUID(),
