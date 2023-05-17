@@ -18,9 +18,10 @@ pyenv 2.3.9
 pyenv install 3.10.9
 ```
 
-* Configure local/current shell/environment to use 3.11.1
+* Configure local/current shell/environment to use 3.10.9
 ```
-pyenv local 3.11.1
+pyenv local 3.10.9
+export PATH=$HOME/.pyenv/shims:$PATH
 ```
 
 * Install all dependencies

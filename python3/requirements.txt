@@ -5,6 +5,7 @@ pyqrcode
 matplotlib
 pyhtml2pdf
 colorlog
+pypng
 #numpy
 #json
 #webbrowser

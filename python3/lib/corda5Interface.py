@@ -7,7 +7,7 @@ import json
 import urllib3
 import logging
 import pyqrcode
-import datetime
+import datetime as dt
 import requests
 import pandas as pd
 import numpy  as np
@@ -93,9 +93,24 @@ class Corda5:
     s.get_log(level)
     s.version = version
     s.queryFlow = 'ListInstrument'
-    checks = [
-            {'func': s.test                            , 'args': list(),     'coverage': ['disk']},
-           ]
+
+
+  def message(s, text, h=4):
+    message_format = {
+                        3: '<h4 style="background-color:cyan;color:blue; font-family: monospace">{}</h4>',
+#                         4: '<h4 style="background-color:#FAE5D3;color:Green; font-family: monospace;>{}</h4>',
+#                         4: '<h4 style="color:Green; font-family: monospace">{}</h4>'
+                        4: '<h4 style="color:blue; font-family: monospace">{}</h4>'
+                     }
+    message_format[None] = message_format[4]
+    msg = message_format.get(h, message_format[None])
+    if type(text) == list:
+        for t in text:
+            print(t, end="")
+#             display(HTML(msg.format(t)))
+    else:
+#         print(text)
+        display(HTML(msg.format(text)))
 
 # ---------------------------------------------------------------------------------------------------
 #
@@ -228,9 +243,9 @@ class Corda5:
   def query_all_nodes(s, query=None):
     query = query if query else s.queryFlow  
     for n in s.nodes:
-      df = s.query(n, query, False)
-      s.log.info("Result for query={} from '{}/{}/{}'".format(query, n, s.nodes[n]['hash'], s.nodes[n]['x500']))
-      display(df)
+      df = s.query(n, query, True)
+      #s.log.info("Result for query={} from '{}/{}/{}'".format(query, n, s.nodes[n]['hash'], s.nodes[n]['x500']))
+      #display(df)
 
 # ---------------------------------------------------------------------------------------------------
 #
@@ -243,20 +258,22 @@ class Corda5:
                     "flowClassName": "__PACKAGE__.query.__QUERY__",
                     "requestBody": {}
               }
+    t1 = dt.datetime.now()
     s.replace_maters_list['QUERY'] = query
     (req, res, result) = s.post(node, queryRequest)
     (req, res) = s.get(node, req)
     res_json = res.json()
     state=res_json.get('flowStatus')
+    t2 = dt.datetime.now()
     df = None
     if state == 'COMPLETED':
       result_list = json.loads(res_json['flowResult'])
       df = pd.DataFrame(result_list)
       if show:
-        s.log.info("Result for query={} from '{}/{}/{}'".format(query, node, s.nodes[node]['hash'], s.nodes[node]['x500']))  
+        s.log.info("Result for query={} from '{}/{}/{}'. (Time taken={})".format(query, node, s.nodes[node]['hash'], s.nodes[node]['x500'], (t2-t1)))
         display(df)
     else:
-      s.log.error("Failure while querying for '{}' from '{}/{}/{}' {}".format(query, node, s.nodes[node]['hash'], s.nodes[node]['x500'], res_json))
+      s.log.error("Failure while querying for '{}' from '{}/{}/{}' {}. (Time taken={})".format(query, node, s.nodes[node]['hash'], s.nodes[node]['x500'], res_json, (t2-t1)))
     return(df)
 
 # ---------------------------------------------------------------------------------------------------
@@ -336,6 +353,7 @@ class Corda5:
 # ---------------------------------------------------------------------------------------------------
   def action(s, node, action):
     s.log.info("Running action '{}' on '{}/{}/{}'".format(action, node, s.nodes[node]['hash'], s.nodes[node]['x500']))
+    t1 = dt.datetime.now()
     (req, res, result) = s.post(node, s.actions[action])
     #(req, res) = s.get(node, req)
     if res.status_code != 200:
@@ -353,6 +371,8 @@ class Corda5:
     if state is None:
       state = 'FAILED'
       result = None
+    t2 = dt.datetime.now()
+    s.log.info("Time taken = {}".format(t2-t1))
     return(req, res, result)
 
 # ---------------------------------------------------------------------------------------------------
@@ -392,6 +412,7 @@ class Corda5:
 #
 # ---------------------------------------------------------------------------------------------------
   def print_to_pdf(s, owner, inst_id, query=None, show=False):
+    t1 = dt.datetime.now()
     html_file = '/tmp/report_{}.html'.format(inst_id)
     pdf_file = '/tmp/report_{}.pdf'.format(inst_id)
     query = query if query else s.queryFlow
@@ -436,62 +457,14 @@ class Corda5:
     if show:
       display(HTML(html_text))
       #webbrowser.open("file:///{}".format(html_file_path))
+    t2 = dt.datetime.now()  
+    s.log.info("Time taken = {}".format(t2-t1))
     return(pdf_file)
 
 # ---------------------------------------------------------------------------------------------------
 #
 # ---------------------------------------------------------------------------------------------------
-  def launch(s):
-    print(s.nodes)
-    print(s.replace_maters_list)
-    print(steps)
-    for req in steps:
-      print("\n\n==================================================")
-      print("Sending request = {}".format(req['name']))
-      if 'post' in req:
-        (req_id, res, result) = s.post(node=req['post'], data=req['request'], wait_for_completion=True)
-        #(req_id, res) = s.get(node=req['post'], req_id=req_id)
-        if 'after_action' in req:
-          req['after_action'](res.json())
-      if 'get'  in req:
-        (req_id, res) = s.get(node=req['get'], req_id=req['req_id'])
-
-# ---------------------------------------------------------------------------------------------------
-#
-# ---------------------------------------------------------------------------------------------------
-  def start(s):
-    length = len(checks)
-    if s.any_one_function is not None and s.any_one_function.lower() in ('help', 'usage', '-h', '--help'):
-      for i in range(length):
-        log.warning("{}/{} function='{}'. Coverage={}.".format(i+1, length, checks[i]['func'].__name__,  checks[i]['coverage']))
-      return()
-
-    start_time = time.time()
-    length = len(checks)
-    for i in range(length):
-      log.debug(checks[i]['func'].__name__)
-      if s.any_one_function is None:
-        if checks[i]['func'].__name__ in s.ignore_if_not_asked: continue
-        args = checks[i]['args']
-        log.warning("{}/{} starting check function='{}' with args='{}'. Coverage={}.".format(i+1, length, checks[i]['func'].__name__,  args, checks[i]['coverage']))
-        step_time = time.time()
-        got = checks[i]['func'](*args)
-      elif s.any_one_function == checks[i]['func'].__name__:
-        args = s.args
-        log.warning("{}/{} starting check function='{}' with args='{}'. Coverage={}.".format(i+1, length, checks[i]['func'].__name__,  args, checks[i]['coverage']))
-        step_time = time.time()
-        got = checks[i]['func'](*args) # function argument is picked from command line
-      else: continue
-      if got is None: continue
-      s.log.info(got)
-      #log.info("{}/{} check function={} done in {} seconds. total time = {} seconds.".format(i+1, length, checks[i]['func'].__name__, round(time.time()-step_time,2), round(time.time() - start_time, 2)))
-
-  def test(s):
-    print(s.i.display_frp_table_nse(isin_list=['INE066F01012']))
-
 def main():
-  o = Test()
-  o.launch()
   return(True)
 
 if __name__ == "__main__":
