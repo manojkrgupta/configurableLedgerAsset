@@ -22,6 +22,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 package = 'com.r3.developers.configurableInstrument'
 apiServer='https://localhost:8888/api/v1/flow'
 apiServerAuth=('admin', 'admin')
+verifier_url = 'http://localhost:9009'
 nodes = {
         'Bob'       : {'x500': 'CN=Bob, OU=Test Dept, O=R3, L=London, C=GB'       , 'hash': '4774B43D1C81' },
         'Dave'      : {'x500': 'CN=Dave, OU=Test Dept, O=R3, L=London, C=GB'      , 'hash': '272937EA30B2' },
@@ -84,10 +85,11 @@ steps=[
 #
 # ---------------------------------------------------------------------------------------------------
 class Corda5:
-  def __init__(s, apiServer=apiServer, apiServerAuth=apiServerAuth, nodes=nodes, replace_maters_list=replace_maters_list, level=logging.INFO, version=2):
+  def __init__(s, apiServer=apiServer, apiServerAuth=apiServerAuth, nodes=nodes, replace_maters_list=replace_maters_list, level=logging.INFO, version=2, verifier_url=verifier_url):
     s.apiServer = apiServer
     s.apiServerAuth = apiServerAuth
     s.nodes = nodes
+    s.verifier_url = verifier_url
     s.replace_maters_list = replace_maters_list
     s.pid = os.getpid()
     s.get_log(level)
@@ -381,6 +383,9 @@ class Corda5:
   def qr_code_for(s, owner, inst_id, query=None, show=True):
     query = query if query else s.queryFlow
     df = s.query(owner, query)
+    if len(df) < 1:
+      s.log.error("No data matching id='{}' in '{}'".format(inst_id, owner))
+      return
     tdf = df[df['id'] == inst_id]
     if len(tdf) != 1:
       s.log.error("data matching id='{}' in '{}' is of length='{}'. Expected length is exactly 1.".format(inst_id, owner, len(tdf)))
@@ -388,8 +393,8 @@ class Corda5:
     
     json_string = json.dumps(tdf.to_dict('records')[0])
     s.log.debug(json_string)
-
-    encoded = pyqrcode.create(json_string)
+    s.log.info('{}?data={}'.format(s.verifier_url, json_string))
+    encoded = pyqrcode.create('{}?data={}'.format(s.verifier_url, json_string))
     encoded.png('/tmp/myqr.png', scale = 3)
     img = mpimg.imread('/tmp/myqr.png')
     if show:
@@ -401,7 +406,9 @@ class Corda5:
 # ---------------------------------------------------------------------------------------------------
   def qr_code(s, inst_id, json_string, show=False):
     qr_file= '/tmp/qr_{}.png'.format(inst_id)
-    encoded = pyqrcode.create(json_string)
+    s.log.info('{}?data={}'.format(s.verifier_url, json_string))
+    encoded = pyqrcode.create('{}?data={}'.format(s.verifier_url, json_string))
+    #encoded = pyqrcode.create(json_string)
     encoded.png(qr_file, scale = 6)
     if show:
       img = mpimg.imread(qr_file)
@@ -417,6 +424,10 @@ class Corda5:
     pdf_file = '/tmp/report_{}.pdf'.format(inst_id)
     query = query if query else s.queryFlow
     df = s.query(owner, query)
+    if len(df) < 1:
+      s.log.error("No data matching id='{}' in '{}'".format(inst_id, owner))
+      return
+
     tdf = df[df['id'] == inst_id]
     if len(tdf) != 1:
       s.log.error("data matching id='{}' in '{}' is of length='{}'. Expected length is exactly 1.".format(inst_id, owner, len(tdf)))
