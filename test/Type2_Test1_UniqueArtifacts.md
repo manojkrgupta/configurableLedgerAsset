@@ -24,7 +24,7 @@ expected sample output:
 h.query('Alice')
 ```
 expected sample output:
-```aidl
+```
 	id	name	owner	issuer	quantity	transferable	expiry	verifiable	attributes
 0	f350e8a9-8d62-4cf6-9bdd-31a3a415375f	Unique artifact. The Mona Lisa	CN=Alice, OU=Test Dept, O=R3, L=London, C=GB	CN=Authority, OU=Test Dept, O=R3, L=London, C=GB	None	True	None	True	{'holding authority': 'The Louvre Museum, Paris'}
 ```
