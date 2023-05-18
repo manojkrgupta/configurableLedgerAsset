@@ -18,6 +18,7 @@ expected sample output:
  'f350e8a9-8d62-4cf6-9bdd-31a3a415375f')
 ```
 *note: f350e8a9-8d62-4cf6-9bdd-31a3a415375f in output is the uuid of the transaction.
+
 2. Query command to be run:
 ```
 h.query('Alice')
@@ -28,6 +29,7 @@ expected sample output:
 0	f350e8a9-8d62-4cf6-9bdd-31a3a415375f	Unique artifact. The Mona Lisa	CN=Alice, OU=Test Dept, O=R3, L=London, C=GB	CN=Authority, OU=Test Dept, O=R3, L=London, C=GB	None	True	None	True	{'holding authority': 'The Louvre Museum, Paris'}
 ```
 *note: f350e8a9-8d62-4cf6-9bdd-31a3a415375f in output is the uuid of the transaction.
+
 3. Transfer command to be run:
 ```aidl
 h.transfer('f350e8a9-8d62-4cf6-9bdd-31a3a415375f', 'Alice', 'Charlie')
@@ -79,6 +81,7 @@ _
 h.query('Charlie')
 _
 ```
+
 5. PDF_report command to be run
 just for demo purpose, re-run the issue command in step1 from Authority to Alice
 ```aidl
