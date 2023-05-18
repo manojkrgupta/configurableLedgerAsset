@@ -1,0 +1,1 @@
+# Example 7 - Graduation certificate (Type 4 / Test 1 -- Non transferable, Non quantifiable Instrument)
