@@ -1,1 +1,0 @@
-# Example 6 -- Amazon Vouchers (# Type 3 / Test 2 -- Non transferable, Quantifiable Instrument)
