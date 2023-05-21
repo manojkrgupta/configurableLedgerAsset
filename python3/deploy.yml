@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: manojdjango
+  name: manojdjango
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: manojdjango
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: manojdjango
+    spec:
+      containers:
+      - image: manojkrgupta/manojdjango_amd64:test1
+        imagePullPolicy: Always
+        name: manojdjango-amd64-7jttv
+        resources: {}
+        ports:
+        - containerPort: 8880
+status: {}
