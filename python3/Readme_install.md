@@ -20,7 +20,7 @@ pyenv install 3.10.9
 
 * Configure local/current shell/environment to use 3.10.9
 ```
-pyenv local 3.10.9
+pyenv shell 3.10.9
 export PATH=$HOME/.pyenv/shims:$PATH
 ```
 

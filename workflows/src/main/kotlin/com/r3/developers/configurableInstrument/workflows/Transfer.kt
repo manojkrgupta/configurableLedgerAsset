@@ -15,6 +15,7 @@ import net.corda.v5.ledger.utxo.UtxoLedgerService
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 
 @InitiatingFlow(protocol = "Transfer-Configurable-Instrument")
@@ -75,14 +76,17 @@ class Transfer : ClientStartableFlow {
 
         log.info("Transfer request of instrument id=$stateId, from ${ourIdentity.name} to ${request.to} quantity='$quantity' input state quantity is '${inputState.state.contractState.quantity}'")
 
+        var return_val: UUID
         if (listOf(null, inputState.state.contractState.quantity).contains(quantity)) {// if quantity(q) is null or same as transfer quantity(transfer all)
 //            log.info("transfer requested quantity=$quantity, input state quantity=${inputState.state.contractState.quantity} -- going for changeOwner call")
             // Complete transfer(transfer all)
             outputList.add(inputState.state.contractState.changeOwner(newOwner, issuerMi))
+            return_val = (outputList[0] as Instrument).id
         }else{
 //            log.info("transfer requested quantity=$quantity, input state quantity=${inputState.state.contractState.quantity} -- going for partialTransfer call")
             // Partial transfer(transfer small set)
             outputList = inputState.state.contractState.partialTransfer(quantity, newOwner, issuerMi).toMutableList()
+            return_val = (outputList[1] as Instrument).id
         }
 
         log.info("Transfer request -- found the state id=${inputState.state.contractState.id}, " +
@@ -124,7 +128,8 @@ class Transfer : ClientStartableFlow {
 // Auto Aggregator -- Stopping
 // Aggregator at the initiator
 //            flowEngine.subFlow(Aggregator(inputState.state.contractState.name, inputState.state.contractState.issuer))
-            return(finalizedSignedTransaction.toString())
+//            return(finalizedSignedTransaction.toString())
+            return return_val.toString()
         } catch (e: Exception) {
             "Flow failed, message: ${e.message}"
         }
