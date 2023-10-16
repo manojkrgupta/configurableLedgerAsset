@@ -13,3 +13,5 @@ pypng
 #numpy
 #json
 #webbrowser
+pip
+PyQtWebEngine

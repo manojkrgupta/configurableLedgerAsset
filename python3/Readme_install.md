@@ -27,7 +27,7 @@ export PATH=$HOME/.pyenv/shims:$PATH
 * Install all dependencies
 ```
 cd configurableLedgerAsset/python3
-python3 -m pip install -r requirements.txt 
+python3 -m pip install --upgrade -r requirements.txt 
 ```
 
 * Start Jupyter
